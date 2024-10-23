@@ -1,0 +1,7 @@
+[package]
+name = "wasm-cycles"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+wasmi = "0.38"
