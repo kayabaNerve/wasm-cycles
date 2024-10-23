@@ -1,9 +1,35 @@
-use std::{io::Read, fs::File, collections::HashMap};
+use std::{
+  io::Read,
+  path::PathBuf,
+  fs::{self, File},
+  collections::HashMap,
+  process::Command,
+};
 
 use wasmi::*;
 
 fn main() {
-  let mut file = File::open(std::env::args().skip(1).next().unwrap()).unwrap();
+  let crate_path = std::env::args().skip(1).next().unwrap();
+  assert!(Command::new("cargo")
+    .args(["build", "--release", "--target", "wasm32-unknown-unknown"])
+    .current_dir(&crate_path)
+    .output()
+    .unwrap()
+    .status
+    .success());
+
+  let mut wasm_path = PathBuf::from(crate_path);
+  wasm_path.push("target");
+  wasm_path.push("wasm32-unknown-unknown");
+  wasm_path.push("release");
+  for path in fs::read_dir(&wasm_path).unwrap() {
+    let path = path.unwrap();
+    if path.file_name().into_string().unwrap().ends_with(".wasm") {
+      wasm_path = path.path();
+      break;
+    }
+  }
+  let mut file = File::open(wasm_path).unwrap();
   let mut buf = Vec::new();
   file.read_to_end(&mut buf).unwrap();
 
