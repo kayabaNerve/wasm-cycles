@@ -67,6 +67,13 @@ fn main() {
     let cases = &cases[&test];
 
     for case in cases {
+      // Re-instantiate the instance to capture the first run: https://github.com/kayabaNerve/wasm-cycles/issues/1
+      let instance = Linker::<()>::new(module.engine())
+        .instantiate(&mut store, &module)
+        .unwrap()
+        .ensure_no_start(&mut store)
+        .unwrap();
+
       store.set_fuel(u64::MAX).unwrap();
       instance
         .get_export(&store, case)
