@@ -10,8 +10,23 @@ use wasmi::*;
 
 fn main() {
   let crate_path = std::env::args().skip(1).next().unwrap();
+  let rust_version = std::env::args().skip(2).next();
+
+  let mut build_args: Vec<String> = [
+    "build".to_string(),
+    "--release".to_string(),
+    "--target".to_string(),
+    "wasm32v1-none".to_string(),
+    "--no-default-features".to_string(),
+  ]
+  .to_vec();
+
+  if let Some(rust_v) = rust_version {
+    build_args.insert(0, rust_v);
+  };
+
   assert!(Command::new("cargo")
-    .args(["build", "--release", "--target", "wasm32-unknown-unknown"])
+    .args(build_args)
     .current_dir(&crate_path)
     .output()
     .unwrap()
@@ -20,7 +35,7 @@ fn main() {
 
   let mut wasm_path = PathBuf::from(crate_path);
   wasm_path.push("target");
-  wasm_path.push("wasm32-unknown-unknown");
+  wasm_path.push("wasm32v1-none");
   wasm_path.push("release");
   for path in fs::read_dir(&wasm_path).unwrap() {
     let path = path.unwrap();
